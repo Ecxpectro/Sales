@@ -1,6 +1,7 @@
 ﻿@page "/countries"
 @inject IRepository repository
-
+@inject NavigationManager navigationManager
+@inject SweetAlertService sweetAlertService
 <h3>Countries</h3>
 
 <a class="btn btn-primary mb-3" href="/countries/create">Add Country</a>
@@ -19,8 +20,8 @@
                 {
                     <tr>
                         <td>
-                            <a class="btn btn-warning">Editar</a>
-                            <button class="btn btn-danger">Borrar</button>
+                            <a class="btn btn-warning" href="/countries/edit/@country.Id">Editar</a>
+                            <button class="btn btn-danger" @onclick=@(() => DeleteAsync(country.Id))>Borrar</button>
                         </td>
                         <td>
                             @country.Name
@@ -38,7 +39,46 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
         var responseHttp = await repository.Get<List<Country>>("/api/countries");
         Countries = responseHttp.Response;
+
+    }
+
+    private async Task DeleteAsync(int id)
+    {
+        var result = await sweetAlertService.FireAsync(new SweetAlertOptions
+            {
+                Title = "Confirmation",
+                Text = "Are you sure you want to delete this data?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true,
+                CancelButtonText = "No",
+                ConfirmButtonText = "Yes"
+        });
+
+        var confirm = string.IsNullOrEmpty(result.Value);
+        if (confirm)
+        {
+            return;
+        }
+
+        var responseHttp = await repository.Delete($"/api/countries/{id}");
+
+        if (responseHttp.Error)
+        {
+            if(responseHttp.HttpResponseMessage.StatusCode != HttpStatusCode.NotFound)
+            {
+                var message = await responseHttp.GetErrorMessageAsync();
+                await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+                return;
+            }
+        }
+
+        await LoadAsync();
     }
 }
