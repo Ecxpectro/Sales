@@ -28,22 +28,54 @@ namespace Sales.Api.Controllers
             {
                 return NotFound();
             }
-            
+
             return Ok(coutry);
         }
         [HttpPost]
         public async Task<ActionResult> PostAsync(Country country)
         {
-            _context.Countries.Add(country);
-            await _context.SaveChangesAsync();
-            return Ok(country);
+            try
+            {
+                _context.Countries.Add(country);
+                await _context.SaveChangesAsync();
+                return Ok(country);
+            }
+            catch (DbUpdateException dbupdateException)
+            {
+                if (dbupdateException.InnerException!.Message.Contains("duplicate"))
+                {
+                    return BadRequest("There's a country with the same name.");
+                }
+
+                return BadRequest(dbupdateException.Message);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
         [HttpPut]
         public async Task<ActionResult> PutAsync(Country country)
         {
-            _context.Countries.Update(country);
-            await _context.SaveChangesAsync();
-            return Ok(country);
+            try
+            {
+                _context.Countries.Update(country);
+                await _context.SaveChangesAsync();
+                return Ok(country);
+            }
+            catch (DbUpdateException dbupdateException)
+            {
+                if (dbupdateException.InnerException!.Message.Contains("duplicate"))
+                {
+                    return BadRequest("There's a country with the same name.");
+                }
+
+                return BadRequest(dbupdateException.Message);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteAsync(int id)
