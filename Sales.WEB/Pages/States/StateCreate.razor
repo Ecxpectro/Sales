@@ -1,0 +1,36 @@
+﻿@page "/states/create/{CountryId:int}"
+@inject IRepository repository
+@inject NavigationManager navigationManager
+@inject SweetAlertService sweetAlertService
+<h3>Create State</h3>
+
+<StateForm @ref="_stateForm" State="_state" OnValidSubmit="Create" ReturnAction="Return" />
+
+
+@code {
+    private State _state = new();
+    private StateForm? _stateForm;
+
+    [Parameter]
+    public int CountryId { get; set; }
+
+    private async Task Create()
+    {
+        _state.CountryId = CountryId;
+        var httpResponse = await repository.Post("/api/states", _state);
+        if (httpResponse.Error)
+        {
+            var message = await httpResponse.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        Return();
+    }
+
+    private void Return()
+    {
+        _stateForm!.FormPostedSuccessfully = true;
+        navigationManager.NavigateTo($"/countries/details/{CountryId}");
+    }
+}
