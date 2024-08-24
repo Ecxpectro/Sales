@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Sales.Api.Data;
+using Sales.Api.Services;
+using Sales.Api.Services.Interfaces;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +19,9 @@ builder.Services.AddDbContext<DataContext>(opt =>
                      });
 });
 builder.Services.AddTransient<SeedDb>();
+builder.Services.AddScoped<IApiService, ApiService>();
+
+
 var app = builder.Build();
 
 SeedData(app);
