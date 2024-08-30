@@ -23,7 +23,11 @@ namespace Sales.Api.Controllers
             var queryable = _context.Countries
                 .Include(x => x.States)
                 .AsQueryable();
-            
+            if (!string.IsNullOrEmpty(pagination.Filter))
+            {
+                queryable = queryable.Where(x => x.Name.ToLower().Contains(pagination.Filter.ToLower()));
+            }
+
             return Ok(await queryable
                 .OrderBy(x => x.Name)
                 .Paginate(pagination)
@@ -33,6 +37,10 @@ namespace Sales.Api.Controllers
         public async Task<ActionResult> GetPages([FromQuery] PaginationDTO pagination)
         {
             var queryable = _context.Countries.AsQueryable();
+            if (!string.IsNullOrEmpty(pagination.Filter))
+            {
+                queryable = queryable.Where(x => x.Name.ToLower().Contains(pagination.Filter.ToLower()));
+            }
             double count = await queryable.CountAsync();
             double totalPages = Math.Ceiling(count/ pagination.RecordsNumber);
             return Ok(totalPages);

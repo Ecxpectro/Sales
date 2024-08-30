@@ -4,7 +4,19 @@
 @inject SweetAlertService sweetAlertService
 <h3>Countries</h3>
 
-<a class="btn btn-primary mb-3" href="/countries/create">Add Country</a>
+<div class="mb-2" style="display: flex; flex-wrap:wrap; align-items: center;">
+    <div>
+        <a class="btn btn-primary" href="/countries/create">New Country</a>
+    </div>
+    <div class="mx-2">
+        <input style="width: 400px;" type="text" class="form-control" id="titulo" placeholder="Search country..." @bind-value="Filter" />
+    </div>
+    <div>
+        <button type="button" class="btn btn-outline-primary" @onclick="ApplyFilterAsync">Apply filter</button>
+        <button type="button" class="btn btn-outline-danger" @onclick="CleanFilterAsync">Clear</button>
+    </div>
+</div>
+
 
 <Pagination CurrentPage="_currentPage" TotalPages="_totalPages" SelectedPage="SelectedPageAsync" />
 
@@ -46,6 +58,14 @@
     private int _currentPage = 1;
     private int _totalPages;
 
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string Page { get; set; } = string.Empty;
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string Filter { get; set; } = string.Empty;
+
     protected override async Task OnInitializedAsync()
     {
         await LoadAsync();
@@ -53,8 +73,25 @@
 
     private async Task LoadAsync(int page = 1)
     {
-        string urlCountries = $"api/countries?page={page}";
-        string urlTotalPages = $"api/countries/totalPages";
+        if (!string.IsNullOrWhiteSpace(Page))
+        {
+            page = Convert.ToInt32(Page);
+        }
+
+        string urlCountries = string.Empty;
+        string urlTotalPages = string.Empty;
+
+        if (string.IsNullOrEmpty(Filter))
+        {
+            urlCountries = $"api/countries?page={page}";
+            urlTotalPages = $"api/countries/totalPages";
+        }
+        else
+        {
+            urlCountries = $"api/countries?page={page}&filter={Filter}";
+            urlTotalPages = $"api/countries/totalPages?filter={Filter}";
+        }
+
 
         var responseCountries = await repository.Get<List<Country>>(urlCountries);
         var responseTotalPages = await repository.Get<int>(urlTotalPages);
@@ -101,4 +138,17 @@
 
         await LoadAsync();
     }
+    private async Task CleanFilterAsync()
+    {
+        Filter = string.Empty;
+        await ApplyFilterAsync();
+    }
+
+    private async Task ApplyFilterAsync()
+    {
+        int page = 1;
+        await LoadAsync(page);
+        await SelectedPageAsync(page);
+    }
+
 }
