@@ -16,7 +16,7 @@
     [Parameter]
     public int TotalPages { get; set; }
     [Parameter]
-    public int Radio { get; set; } = 5;
+    public int Radio { get; set; } = 9;
     [Parameter]
     public EventCallback<int> SelectedPage { get; set; }
     List<PageModel> Links = new(0);
@@ -36,7 +36,7 @@
         });
         for (int i = 1; i <= TotalPages; i++)
         {
-            if(i >= CurrentPage - Radio && i <= CurrentPage + Radio)
+            if(i > CurrentPage - Radio && i <= CurrentPage + Radio && Links.Count <= 10)
             {
                 Links.Add(new PageModel
                 {
