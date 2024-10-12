@@ -1,7 +1,9 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
+using Sales.Api.Helpers.Interfaces;
 using Sales.Api.Services.Interfaces;
 using Sales.Shared.Entities;
+using Sales.Shared.Enums;
 using Sales.Shared.Responses;
 
 namespace Sales.Api.Data
@@ -10,17 +12,22 @@ namespace Sales.Api.Data
     {
         private readonly DataContext _context;
         private readonly IApiService _apiService;
+        private readonly IUserHelper _userHelper;
 
-        public SeedDb(DataContext context, IApiService apiService)
+        public SeedDb(DataContext context, IApiService apiService, IUserHelper userHelper)
         {
             _context = context;
             _apiService = apiService;
+            _userHelper = userHelper;
         }
 
         public async Task SeedAsync()
         {
             await _context.Database.EnsureCreatedAsync();
             await CheckCountriesAsync();
+            await CheckRolesAsync();
+            await CheckUserAsync(new User { Document = "1010", FirstName = "Henrique", LastName = "Schraiber", Email = "henriquescunha123@gmail.com", UserName = "henriquescunha123@gmail.com", PhoneNumber = "958132654", Address = "Vitória Es", UserType = UserType.Admin, City = _context.Cities.FirstOrDefault()});
+
         }
 
         private async Task CheckCountriesAsync()
@@ -81,5 +88,23 @@ namespace Sales.Api.Data
                 }
             }
         }
+        private async Task<User> CheckUserAsync(User user)
+        {
+            var userExist = await _userHelper.GetUserAsync(user.Email!);
+            if (userExist == null)
+            {
+                await _userHelper.AddUserAsync(user, "123456");
+                await _userHelper.AddUserToRoleAsync(user, user.UserType.ToString());
+            }
+
+            return user;
+        }
+
+        private async Task CheckRolesAsync()
+        {
+            await _userHelper.CheckRoleAsync(UserType.Admin.ToString());
+            await _userHelper.CheckRoleAsync(UserType.User.ToString());
+        }
+
     }
 }
