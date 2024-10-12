@@ -2,6 +2,7 @@
 @inject IRepository repository
 @inject NavigationManager navigationManager
 @inject SweetAlertService sweetAlertService
+@attribute [Authorize(Roles = "Admin")]
 <h3>Create City</h3>
 
 <CityForm @ref="_cityForm" City="_city" OnValidSubmit="Create" ReturnAction="Return" />

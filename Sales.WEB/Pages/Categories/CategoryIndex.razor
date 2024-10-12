@@ -2,6 +2,7 @@
 @inject IRepository repository
 @inject NavigationManager navigationManager
 @inject SweetAlertService sweetAlertService
+@attribute [Authorize(Roles = "Admin")]
 <h3>Categories</h3>
 
 <div class="mb-2" style="display: flex; flex-wrap:wrap; align-items: center;">

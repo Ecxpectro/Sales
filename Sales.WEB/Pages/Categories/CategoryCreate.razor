@@ -2,6 +2,7 @@
 @inject IRepository repository
 @inject NavigationManager navigationManager
 @inject SweetAlertService sweetAlertService
+@attribute [Authorize(Roles = "Admin")]
 <h3>Create Category</h3>
 
 <CategoryForm @ref="_categoryForm" Category="_category" OnValidSubmit="Create" ReturnAction="Return" />
