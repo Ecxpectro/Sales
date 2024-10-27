@@ -5,54 +5,60 @@
 @attribute [Authorize(Roles = "Admin")]
 @if (_state is null)
 {
-    <p>Cargando...</p>
+    <div class="spinner" />
 }
 else
 {
-    <h3>@_state.Name</h3>
-    <div class="mb-2" style="display: flex; flex-wrap:wrap; align-items: center;">
-        <div>
-            <a class="btn btn-primary" href="/cities/create/@Id">New City</a>
-            <a class="btn btn-success" href="/countries/details/@_state.CountryId">Return</a>
+
+    <div class="card">
+        <div class="card-header">
+            <span>
+                <i class="oi oi-globe"></i> @_state.Name
+                <a class="btn btn-sm btn-primary float-end" href="/cities/create/@Id"><i class="oi oi-plus"></i> New City</a>
+                <a class="btn btn-sm btn-success float-end mx-2" href="/countries/details/@_state.CountryId"><i class="oi oi-arrow-thick-left"></i> Return</a>
+            </span>
         </div>
-        <div class="mx-2">
-            <input style="width: 400px;" type="text" class="form-control" id="titulo" placeholder="Buscar ciudad..." @bind-value="Filter" />
-        </div>
-        <div>
-            <button type="button" class="btn btn-outline-primary" @onclick="ApplyFilterAsync">Apply Filter</button>
-            <button type="button" class="btn btn-outline-danger" @onclick="CleanFilterAsync">Clear</button>
+        <div class="card-body">
+            <div class="mb-2" style="display: flex; flex-wrap:wrap; align-items: center;">
+                <div>
+                    <input style="width: 400px;" type="text" class="form-control" id="titulo" placeholder="Search City..." @bind-value="Filter" />
+                </div>
+                <div class="mx-1">
+                    <button type="button" class="btn btn-outline-primary" @onclick="ApplyFilterAsync"><i class="oi oi-layers" /> Apply Filter</button>
+                    <button type="button" class="btn btn-outline-danger" @onclick="CleanFilterAsync"><i class="oi oi-ban" /> Clear</button>
+                </div>
+            </div>
+
+            <Pagination CurrentPage="_currentPage" TotalPages="_totalPages" SelectedPage="SelectedPageAsync" />
+            <GenericList MyList="_cities">
+                <Body>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>City</th>
+                                <th style="width:180px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var city in _cities!)
+                            {
+                                <tr>
+                                    <td>
+                                        @city.Name
+                                    </td>
+                                    <td>
+                                        <a class="btn btn-sm btn-warning" href="/cities/edit/@city.Id"><i class="oi oi-pencil" /> Edit</a>
+                                        <button class="btn btn-sm btn-danger" @onclick=@(() => DeleteAsync(city.Id))><i class="oi oi-trash" /> Delete</button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </Body>
+
+            </GenericList>
         </div>
     </div>
-
-    <Pagination CurrentPage="_currentPage" TotalPages="_totalPages" SelectedPage="SelectedPageAsync" />
-    <GenericList MyList="_cities">
-        <Body>
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>City</th>
-                        <th style="width:180px;"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var city in _cities!)
-                    {
-                        <tr>
-                            <td>
-                                @city.Name
-                            </td>
-                            <td>
-                                <a class="btn btn-warning" href="/cities/edit/@city.Id">Edit</a>
-                                <button class="btn btn-danger" @onclick=@(() => DeleteAsync(city.Id))>Delete</button>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </Body>
-
-    </GenericList>
-
 }
 
 @code {
